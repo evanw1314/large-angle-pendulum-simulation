@@ -3,14 +3,14 @@ package main.java.pendulum;
 public class Pendulum {
     
     private double length;
-    private double angle; //in degrees
+    private double angle;
     private double angularVelocity;
     
     public static final double GRAVITY = 9.81;
 
     public Pendulum(double length, double angle) {
         this.length = length;
-        this.angle = angle;
+        this.angle = Math.toRadians(angle);
         this.angularVelocity = 0.0;
     }
 
@@ -20,6 +20,10 @@ public class Pendulum {
 
     public double getAngle() {
         return angle;
+    }
+
+    public void updateLength(double length) {
+        this.length = length;
     }
 
     public double getAngularVelocity() {
@@ -35,7 +39,13 @@ public class Pendulum {
     }
 
     public double getAngularAcceleration(double angle) {
-        return -GRAVITY / length * Math.sin(Math.toRadians(angle));
+        return -GRAVITY / length * Math.sin(angle);
+    }
+
+    public void reset() {
+        this.angle = Math.toRadians(45);
+        this.angularVelocity = 0.0;
+        this.length = 1.0;
     }
 
 }
