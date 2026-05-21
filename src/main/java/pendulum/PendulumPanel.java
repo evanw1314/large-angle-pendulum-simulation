@@ -3,6 +3,9 @@ package main.java.pendulum;
 import java.awt.*;
 import javax.swing.JPanel;
 
+/**
+ * A Swing panel that renders the pendulum using simple 2D graphics.
+ */
 public class PendulumPanel extends JPanel{
     
     private Pendulum pendulum;
@@ -12,6 +15,11 @@ public class PendulumPanel extends JPanel{
         this.pendulum = pendulum;
     }
 
+    /**
+     * Paints the pendulum rod and bob at the current simulation state.
+     *
+     * @param g the Graphics context used for drawing the pendulum components
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

@@ -1,7 +1,17 @@
 package main.java.pendulum;
 
+/**
+ * A Runge-Kutta 4th order integrator for numerically updating the pendulum state.
+ */
 public class RK4Integrator {
     
+    /**
+     * Advances the pendulum state by the specified time step using RK4.
+     *
+     * @param pendulum the pendulum to update
+     * @param timeStep the simulation time increment in seconds
+     * @return an array containing the updated angle and angular velocity
+     */
     public double[] step(Pendulum pendulum, double timeStep) {
 
         //To clear things up, k#Angle is the angular velocity, while k#AngularVelocity is the angular acceleration. 

@@ -3,7 +3,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -15,6 +14,11 @@ import javax.swing.JSlider;
 import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 
+/**
+ * A JFrame container for the pendulum simulation user interface.
+ * <p>
+ * This frame displays the pendulum animation, live data labels, and control widgets.
+ */
 public class SimulationFrame extends JFrame{
     
     private Pendulum pendulum;
@@ -31,6 +35,12 @@ public class SimulationFrame extends JFrame{
     private int screenWidth = (int) size.getWidth();
     private int screenHeight = (int) size.getHeight();
 
+    /**
+     * Creates a new simulation frame using the given pendulum model and integrator.
+     *
+     * @param pendulum the pendulum model to simulate
+     * @param integrator the numerical integrator for updating the pendulum state
+     */
     public SimulationFrame(Pendulum pendulum, RK4Integrator integrator) {
         this.pendulum = pendulum;
         this.integrator = integrator;
