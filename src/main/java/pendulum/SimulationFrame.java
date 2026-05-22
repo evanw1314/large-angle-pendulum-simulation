@@ -4,6 +4,20 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 import javax.swing.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.Instant;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 
 import java.awt.image.BufferedImage;
@@ -27,6 +41,8 @@ public class SimulationFrame extends JFrame{
     private JPanel controlPanel;
     private RK4Integrator integrator;
     private Timer timer;
+    private PrintWriter csvWriter;
+    private double initialAngleDeg;
 
     private double previousAngularAcceleration;
     private double periodTime;
@@ -183,6 +199,8 @@ public class SimulationFrame extends JFrame{
             pendulum.updateAngle(newAngle);
             pendulum.updateAngularVelocity(0);
             initialAngleLabel.setText("Initial Angle: " + angleSlider.getValue() + " degrees");
+            // Track the selected initial angle in degrees for CSV output
+            initialAngleDeg = angleSlider.getValue();
             previousAngularAcceleration = 0;
             determined = false;
             periodTime = 0;
@@ -222,9 +240,21 @@ public class SimulationFrame extends JFrame{
             periodTime = 0; // Reset the period timer
             determined = false; // Reset the determined flag
             previousAngularAcceleration = 0; // Reset the previous angular acceleration
+            // Update the CSV-tracked initial angle to the reset value
+            initialAngleDeg = Math.toDegrees(pendulum.getAngle());
         });
 
         this.setVisible(true);
+
+        // Initialize CSV writer
+        try {
+            csvWriter = new PrintWriter(new BufferedWriter(new FileWriter("livedata.csv", false)));
+            csvWriter.println("initialAngleDeg,lengthM,angularVelocityRadPerS,angularAccelerationRadPerS2,angleDeg,timestamp");
+            csvWriter.flush();
+        } catch (Exception ex) {
+            System.err.println("Could not open livedata.csv: " + ex.getMessage());
+            csvWriter = null;
+        }
 
         timer = new Timer(16, e -> {
             this.integrator.step(this.pendulum, 0.01);
@@ -245,10 +275,32 @@ public class SimulationFrame extends JFrame{
 
             previousAngularAcceleration = pendulum.getAngularAcceleration(pendulum.getAngle());
 
+            // Write CSV row: initialAngleDeg, length, angular velocity, angular acceleration, angle, timestamp
+            if (csvWriter != null) {
+                double lengthM = pendulum.getLength();
+                double angularVelocity = pendulum.getAngularVelocity();
+                double angularAcceleration = pendulum.getAngularAcceleration(pendulum.getAngle());
+                double angleDeg = Math.toDegrees(pendulum.getAngle());
+                String timestamp = Instant.now().toString();
+                csvWriter.println(String.format("%.6f,%.6f,%.6f,%.6f,%.6f,%s",
+                        initialAngleDeg, lengthM, angularVelocity, angularAcceleration, angleDeg, timestamp));
+                csvWriter.flush();
+            }
+
             panel.repaint();
         });
         timer.start();
         
+        // Ensure CSV is closed when window closes
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                if (csvWriter != null) {
+                    csvWriter.flush();
+                    csvWriter.close();
+                }
+            }
+        });
     }
 
 }

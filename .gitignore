@@ -26,3 +26,5 @@ replay_pid*
 # intellij
 .idea
 large-angle-pendulum-simulation.iml
+
+livedata.csv
