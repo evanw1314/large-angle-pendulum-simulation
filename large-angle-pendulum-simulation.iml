@@ -9,7 +9,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Downloads/javase-3.5.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javase-3.5.4.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -18,7 +18,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Downloads/core-3.5.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/core-3.5.4.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
