@@ -29,6 +29,10 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 
+import com.sun.net.httpserver.HttpServer;
+import java.net.InetSocketAddress;
+import java.net.InetAddress;
+
 /**
  * A JFrame container for the pendulum simulation user interface.
  * <p>
@@ -51,6 +55,7 @@ public class SimulationFrame extends JFrame{
     private Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
     private int screenWidth = (int) size.getWidth();
     private int screenHeight = (int) size.getHeight();
+    private HttpServer fileServer;
 
     /**
      * Creates a new simulation frame using the given pendulum model and integrator.
@@ -162,29 +167,40 @@ public class SimulationFrame extends JFrame{
 
         qrButton.addActionListener(e -> {
             try {
-                // Provide the path to the file you want to convert
-                String filePath = "livedata.csv";
-                String content = Files.readString(Paths.get(filePath));
+                // 1. Start a local server if it isn't already running
+                if (fileServer == null) {
+                    fileServer = HttpServer.create(new InetSocketAddress(4123), 0);
 
-                // Enforce the ~3KB size limit for standard QR codes
-                if (content.getBytes().length > 2953) {
-                    JOptionPane.showMessageDialog(this,
-                            "The file is too large to fit in a QR code.",
-                            "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
+                    // Create the download endpoint
+                    fileServer.createContext("/download", exchange -> {
+                        // Ensure all written data is saved to the disk before reading
+                        if (csvWriter != null) csvWriter.flush();
+
+                        byte[] response = Files.readAllBytes(Paths.get("livedata.csv"));
+
+                        // Tell the phone to download it as a file
+                        exchange.getResponseHeaders().add("Content-Disposition", "attachment; filename=\"livedata.csv\"");
+                        exchange.sendResponseHeaders(200, response.length);
+                        exchange.getResponseBody().write(response);
+                        exchange.close();
+                    });
+                    fileServer.setExecutor(null);
+                    fileServer.start();
                 }
 
-                // Generate the QR Code matrix
-                QRCodeWriter barcodeWriter = new QRCodeWriter();
-                BitMatrix bitMatrix = barcodeWriter.encode(content, BarcodeFormat.QR_CODE, 300, 300);
+                // 2. Get your computer's local IP address (e.g., 192.168.1.5)
+                String ipAddress = InetAddress.getLocalHost().getHostAddress();
+                String downloadUrl = "http://" + ipAddress + ":4123/download-qrcode";
 
-                // Convert the matrix directly into an Image in memory (no need to save to disk)
+                // 3. Generate a QR code for the URL (This is a very short string, so it will always fit!)
+                QRCodeWriter barcodeWriter = new QRCodeWriter();
+                BitMatrix bitMatrix = barcodeWriter.encode(downloadUrl, BarcodeFormat.QR_CODE, 300, 300);
                 BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
 
-                // Display the image in a pop-up dialog
+                // 4. Display the QR code
                 JOptionPane.showMessageDialog(this,
                         new JLabel(new ImageIcon(qrImage)),
-                        "QR Code Data", JOptionPane.PLAIN_MESSAGE);
+                        "Scan to Download CSV (Must be on same WiFi)", JOptionPane.PLAIN_MESSAGE);
 
             } catch (Exception ex) {
                 ex.printStackTrace();
