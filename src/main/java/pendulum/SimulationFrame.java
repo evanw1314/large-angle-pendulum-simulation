@@ -3,6 +3,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
+import javax.swing.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,6 +19,15 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
+
+import java.awt.image.BufferedImage;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
 
 /**
  * A JFrame container for the pendulum simulation user interface.
@@ -71,6 +81,8 @@ public class SimulationFrame extends JFrame{
         JSlider lengthSlider = new JSlider(1, 200, (int) (pendulum.getLength() * 100));
         JButton startPauseButton = new JButton("Pause");
         JButton resetButton = new JButton("Reset");
+        JButton qrButton = new JButton("QRCode");
+
 
         JLabel angleLabel = new JLabel("Angle: " + Math.toDegrees(pendulum.getAngle()) + " degrees");
         JLabel accelerationLabel = new JLabel("Acceleration: " + pendulum.getAngularAcceleration(pendulum.getAngle())  + " rad/s²");
@@ -103,6 +115,7 @@ public class SimulationFrame extends JFrame{
 
         startPauseButton.setAlignmentX(CENTER_ALIGNMENT);
         resetButton.setAlignmentX(CENTER_ALIGNMENT);
+        qrButton.setAlignmentX(CENTER_ALIGNMENT);
 
         controlPanel.add(Box.createVerticalStrut(screenHeight * 3 / 32));
         controlPanel.add(controlsSection);
@@ -129,6 +142,7 @@ public class SimulationFrame extends JFrame{
         lengthSlider.setFont(new Font("Arial", Font.BOLD, 18));
         startPauseButton.setFont(new Font("Arial", Font.BOLD, 18));
         resetButton.setFont(new Font("Arial", Font.BOLD, 18));
+        qrButton.setFont(new Font("Arial", Font.BOLD, 18));
         angleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         accelerationLabel.setFont(new Font("Arial", Font.BOLD, 18));
         velocityLabel.setFont(new Font("Arial", Font.BOLD, 18));
@@ -136,6 +150,7 @@ public class SimulationFrame extends JFrame{
 
         startPauseButton.setMaximumSize(new Dimension(300, 40));
         resetButton.setMaximumSize(new Dimension(300, 40));
+        qrButton.setMaximumSize(new Dimension(300, 40));
         
         controlPanel.add(Box.createVerticalStrut(screenHeight * 3 / 128));
         controlPanel.add(buttonsSection);
@@ -143,6 +158,41 @@ public class SimulationFrame extends JFrame{
 
         buttonsSection.add(Box.createVerticalStrut(20));
         buttonsSection.add(resetButton);
+        buttonsSection.add(qrButton);
+
+        qrButton.addActionListener(e -> {
+            try {
+                // Provide the path to the file you want to convert
+                String filePath = "livedata.csv";
+                String content = Files.readString(Paths.get(filePath));
+
+                // Enforce the ~3KB size limit for standard QR codes
+                if (content.getBytes().length > 2953) {
+                    JOptionPane.showMessageDialog(this,
+                            "The file is too large to fit in a QR code.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Generate the QR Code matrix
+                QRCodeWriter barcodeWriter = new QRCodeWriter();
+                BitMatrix bitMatrix = barcodeWriter.encode(content, BarcodeFormat.QR_CODE, 300, 300);
+
+                // Convert the matrix directly into an Image in memory (no need to save to disk)
+                BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
+
+                // Display the image in a pop-up dialog
+                JOptionPane.showMessageDialog(this,
+                        new JLabel(new ImageIcon(qrImage)),
+                        "QR Code Data", JOptionPane.PLAIN_MESSAGE);
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this,
+                        "Error generating QR: " + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         angleSlider.addChangeListener(e -> {
             double newAngle = Math.toRadians(angleSlider.getValue());
