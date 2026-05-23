@@ -167,18 +167,11 @@ public class SimulationFrame extends JFrame{
 
         qrButton.addActionListener(e -> {
             try {
-                // 1. Start a local server if it isn't already running
                 if (fileServer == null) {
                     fileServer = HttpServer.create(new InetSocketAddress(4123), 0);
-
-                    // Create the download endpoint
                     fileServer.createContext("/download", exchange -> {
-                        // Ensure all written data is saved to the disk before reading
                         if (csvWriter != null) csvWriter.flush();
-
                         byte[] response = Files.readAllBytes(Paths.get("livedata.csv"));
-
-                        // Tell the phone to download it as a file
                         exchange.getResponseHeaders().add("Content-Disposition", "attachment; filename=\"livedata.csv\"");
                         exchange.sendResponseHeaders(200, response.length);
                         exchange.getResponseBody().write(response);
@@ -188,16 +181,11 @@ public class SimulationFrame extends JFrame{
                     fileServer.start();
                 }
 
-                // 2. Get your computer's local IP address (e.g., 192.168.1.5)
                 String ipAddress = InetAddress.getLocalHost().getHostAddress();
                 String downloadUrl = "http://" + ipAddress + ":4123/download-qrcode";
-
-                // 3. Generate a QR code for the URL (This is a very short string, so it will always fit!)
                 QRCodeWriter barcodeWriter = new QRCodeWriter();
                 BitMatrix bitMatrix = barcodeWriter.encode(downloadUrl, BarcodeFormat.QR_CODE, 300, 300);
                 BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
-
-                // 4. Display the QR code
                 JOptionPane.showMessageDialog(this,
                         new JLabel(new ImageIcon(qrImage)),
                         "Scan to Download CSV (Must be on same WiFi)", JOptionPane.PLAIN_MESSAGE);
