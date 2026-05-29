@@ -25,11 +25,8 @@ public class PendulumPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        // Cast to Graphics2D to unlock advanced drawing features like gradients and strokes
         Graphics2D g2d = (Graphics2D) g;
 
-        // Enable Anti-aliasing for smoother rendering
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         int centerX = getWidth() / 2;
@@ -37,7 +34,6 @@ public class PendulumPanel extends JPanel {
         int bobX = centerX + (int) (SCALE * pendulum.getLength() * Math.sin(pendulum.getAngle()));
         int bobY = centerY + (int) (SCALE * pendulum.getLength() * Math.cos(pendulum.getAngle()));
 
-        // --- 1. Draw the Metallic Rod ---
         g2d.setStroke(new BasicStroke(4.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
         GradientPaint rodPaint = new GradientPaint(
@@ -47,7 +43,6 @@ public class PendulumPanel extends JPanel {
         g2d.setPaint(rodPaint);
         g2d.drawLine(centerX, centerY, bobX, bobY);
 
-        // --- 2. Draw the Metallic Bob ---
         int bobRadius = 16;
         int bobDiameter = bobRadius * 2;
 
@@ -64,12 +59,10 @@ public class PendulumPanel extends JPanel {
         g2d.setPaint(metalBobPaint);
         g2d.fillOval(bobX - bobRadius, bobY - bobRadius, bobDiameter, bobDiameter);
 
-        // Add a subtle dark rim to the bob
         g2d.setColor(new Color(40, 40, 40));
         g2d.setStroke(new BasicStroke(1.0f));
         g2d.drawOval(bobX - bobRadius, bobY - bobRadius, bobDiameter, bobDiameter);
 
-        // --- 3. Draw a Metallic Pivot Pin ---
         int pinRadius = 5;
 
         RadialGradientPaint pinPaint = new RadialGradientPaint(
