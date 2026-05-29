@@ -71,7 +71,7 @@ public class PendulumPanel extends JPanel {
                 new Point2D.Float(centerX - 2, centerY - 2),
                 new float[]{0.0f, 1.0f},
                 new Color[]{Color.WHITE, Color.DARK_GRAY},
-                MultipleGradientPaint.CycleMethod.NO_CYCLE // <-- Fixed here
+                MultipleGradientPaint.CycleMethod.NO_CYCLE
         );
         g2d.setPaint(pinPaint);
         g2d.fillOval(centerX - pinRadius, centerY - pinRadius, pinRadius * 2, pinRadius * 2);
